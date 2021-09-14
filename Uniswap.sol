@@ -15,7 +15,6 @@ contract Uniswap is ERC20{
     event EthPurchase(address indexed buyer, uint256 indexed eth_bought, uint256 indexed tokens_sold);
     event AddLiquidity(address indexed provider, uint256 indexed eth_amount, uint256 indexed token_amount);
     event RemoveLiquidity(address indexed provider, uint256 indexed eth_amount, uint256 indexed token_amount);
-    event Transfer(address indexed _from, address indexed _to, uint256 _value);
     
 
     ///@notice This is the token that ETH will be exchanged with
@@ -68,9 +67,8 @@ contract Uniswap is ERC20{
             //Minting liquidity tokens to the sender
             _mint(msg.sender, liquidity_tokens);
 
-            //Emitting the events
+            //Emit event
             emit AddLiquidity(msg.sender, msg.value, amount_tokens);
-            emit Transfer(address(0), msg.sender, liquidity_tokens);
 
             //Returns the LP tokens
             return liquidity_tokens;   
@@ -86,9 +84,8 @@ contract Uniswap is ERC20{
             //Minting liquidity tokens to sender
             _mint(msg.sender, liquidity_tokens);
             
-            //Emitting the events
+            //Emit event
             emit AddLiquidity(msg.sender, msg.value, amount_tokens);
-            emit Transfer(address(0),msg.sender, liquidity_tokens);
 
             //Returns the liquidity tokens minted
             return liquidity_tokens;
@@ -120,9 +117,8 @@ contract Uniswap is ERC20{
         payable(msg.sender).transfer(eth_amount);
         token.transfer(msg.sender, token_amount);
 
-        //Emit events
+        //Emit event
         emit RemoveLiquidity(msg.sender, eth_amount, token_amount);
-        emit Transfer(msg.sender, address(0), liquidity_to_remove);
         
         //Return the eth and token amounts
         return (eth_amount, token_amount);
