@@ -157,7 +157,7 @@ contract Uniswap is ERC20{
      * @param min_tokens The amount of Tokens user would like to buy
      *        Would ideally be the result of getEthToTokenPrice function
      */
-    function swapEthToTokens(uint256 min_tokens) public payable {
+    function swapEthToTokens(uint256 min_tokens) public payable returns(uint256) {
         uint256 tokenReserve = getTokenReserve();
 
         //Calculates the tokens to be bought using the getPrice function
@@ -175,6 +175,8 @@ contract Uniswap is ERC20{
 
         //Emit event
         emit TokenPurchase(msg.sender, msg.value, tokensBought);
+
+        return tokensBought;
     }
 
     /**
@@ -208,6 +210,46 @@ contract Uniswap is ERC20{
 
         //Emit event
         emit EthPurchase(msg.sender, ethBought, tokens_to_sell);
+    }
+
+    /**
+     * @notice Swaps between 2 different ERC20 tokens
+     * @param tokens_to_sell The amount of tokens the user would like to sell
+     * @param min_tokens The amount of the other token that the user would like to buy
+     * @param min_eth The ideal ETH value that the token would be traded for
+     *        Would ideally be the result of getTokenToEthPrice function
+     * @param exchange_addr The address of the exchange contract of the other token
+     */
+
+    function swapTokenToToken(uint256 tokens_to_sell, uint256 min_tokens, uint256 min_eth, address exchange_addr ) public {
+        uint256 tokenReserve = getTokenReserve();
+
+        //Calculates the ETH to be bought using the getPrice function
+        uint256 ethBought = getPrice(
+            tokens_to_sell,
+            tokenReserve,
+            address(this).balance
+        );
+
+        //ethBought can't be less than min_eth
+        require(ethBought >= min_eth, "min_eth input is too large");
+
+        //Transfers token from user to the contract
+        token.transferFrom(
+            msg.sender,
+            address(this),
+            tokens_to_sell
+        );
+
+        //Gets the contract of the other exchange to swap tokens with and calls swapEthToTokens
+        uint256 tokensBought = Uniswap(exchange_addr).swapEthToTokens{value: ethBought}(min_tokens);
+
+        //transfers tokens from the contract to the sender
+        token.transfer(msg.sender, tokensBought);
+
+        //Emit Eth Purchase event
+        emit EthPurchase(msg.sender, ethBought, tokens_to_sell);
+
     }
 
 
